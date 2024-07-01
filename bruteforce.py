@@ -24,5 +24,5 @@ def run_bruteforce(itens, peso_max):
             best = (fit, individuo)
         combos += 1
 
-    print("Nro de combinacoes (Brute Force): "+str(combos))
+    #print("Nro de combinacoes (Brute Force): "+str(combos))
     return(best)

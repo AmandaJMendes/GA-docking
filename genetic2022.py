@@ -51,7 +51,7 @@ def peso(individual , itens):
 def media_fitness(pop, itens, peso_max):
     #Media de fitness da populacao
     summed = reduce(add, (fitness(x, itens, peso_max) for x in pop))
-    sum_peso = 10*reduce(add, (peso(x,itens) for x in pop))
+    sum_peso = reduce(add, (peso(x,itens) for x in pop))
     len_ = len(pop)*1.0
     return (summed/len_, sum_peso/len_)
 
@@ -60,7 +60,7 @@ def best_fitness(pop, itens, peso_max):
     graded = [(x, fitness(x, itens, peso_max)) for x in pop]
     best = max(graded, key=lambda graded:graded[1])
 
-    return (best[1], 10*peso(best[0], itens))
+    return (best[1], peso(best[0], itens), best[0])
 
 def evolve(pop, itens, peso_max, elite=5, r_parents=0.4, mutate=0.01):
     #Tabula cada individuo e o seu fitness

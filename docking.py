@@ -26,7 +26,7 @@ def solve_bruteforce(navios, L):
     t1 = time.time()
     return best, t1-t0
 
-def solve_ga(N, L, p_count, epochs):
+def solve_ga(N, L, p_count, epochs, elite=5, r_parents=0.4, mutate=0.01, navios = []):
     """
     Parâmetros:
     - N: Número de navios
@@ -39,12 +39,12 @@ def solve_ga(N, L, p_count, epochs):
     - Lista contendo a evolução do fitness
     - Tempo que a execução levou (em segundos)
     """
-
-    navios = [] # Definindo os navios (ln (comprimento), m (número de containers))
-    for navio in range(N):
-        ln = random.randint(1, L+1) # Comprimento do navio no intervalo [1, L]
-        m  = random.randint(1, 100) # Número de containers no intervalo [1, 99]
-        navios.append((ln, m))
+    if not navios:
+        navios = [] # Definindo os navios (ln (comprimento), m (número de containers))
+        for navio in range(N):
+            ln = random.randint(1, L//10) # Comprimento do navio no intervalo [1, L]
+            m  = random.randint(1, 100) # Número de containers no intervalo [1, 99]
+            navios.append((ln, m))
 
     t0 = time.time() # Computar tempo para rodar o AG
     p = population(p_count , N) # Criando a população
@@ -53,7 +53,7 @@ def solve_ga(N, L, p_count, epochs):
     best_f = best_fitness (p, navios, L)
     fitness_history = [[media[0]],[media[1]],[best_f[0]],[best_f[1]]] # med fitness|med peso|best fitness|bets peso
     for i in range(epochs):
-        p = evolve(p, navios , L)
+        p = evolve(p, navios , L, elite, r_parents, mutate)
         media  = media_fitness(p, navios, L)
         best_f = best_fitness (p, navios, L)
         fitness_history[0].append(media[0])
@@ -61,39 +61,42 @@ def solve_ga(N, L, p_count, epochs):
         fitness_history[2].append(best_f[0])
         fitness_history[3].append(best_f[1])
     t1 = time.time()
-    best_individual = sorted(p, key=lambda p: p[0])[-1]
-    best_individual_converted = [int(bit) for bit in best_individual]
+    best_individual = [value for value, pos in zip(navios, best_f[2]) if pos == 1]
+    return navios, best_individual, fitness_history, t1-t0
 
-    return navios, best_individual_converted, fitness_history, t1-t0
-
-def evaluate(result_ga, result_brutefoce = None):
+def evaluate(result_ga, result_brutefoce = None, filename = None):
     """
     Essa função recebe os resultados dos algoritmos e plota as métricas
     """
-    navios, p, fitness_history, t_ga = result_ga
-    print("Tempo AG: "+str(t_ga))
-    print("Individuo AG: "+str(sorted(p, key=lambda p:p[0])[-1])+", Valor: " +str(fitness_history[2][-1]))
+    navios, best_individual, fitness_history, t_ga = result_ga
+    #print("-----------AG----------")
+    #print(f"Tempo: {round(t_ga,3)}")
+    #print(f"Melhor indivíduo: {best_individual}")
+    print(f"Fitness: {fitness_history[2][-1]}   |   Tamanho: {fitness_history[3][-1]}")
 
-    if result_brutefoce:
-        best, t_bruteforce = result_brutefoce
-        print("Tempo Brute Force: "+str(t_bruteforce))
-        print("Individuo Brute Force: "+str(best[1])+", Valor: "+str(best[0]))
+
+    # if result_brutefoce:
+    #     best, t_bruteforce = result_brutefoce
+    #     print("-----------Brute Force----------")
+    #     print("Tempo: "+str(round(t_bruteforce,3)))
+    #     best_ships = [value for value, pos in zip(navios, best[1]) if pos == 1]
+    #     print(f"Melhor indivíduo: {best_ships}")
+    #     print(f"Fitness: {best[0]}   |   Tamanho: {peso(best[1], navios)}")
     
+    # fig = plt.figure()
+    # ax = plt.axes()
 
-    fig = plt.figure()
-    ax = plt.axes()
+    # ax.plot(fitness_history[0])
+    # ax.plot(fitness_history[2])
+    # if result_brutefoce:
+    #     ax.plot([best[0] for i in fitness_history[0]])
+    # ax.plot(fitness_history[1])
+    # ax.plot(fitness_history[3])
 
-    ax.plot(fitness_history[0])
-    ax.plot(fitness_history[2])
-    if result_brutefoce:
-        ax.plot([best[0] for i in fitness_history[0]])
-    ax.plot(fitness_history[1])
-    ax.plot(fitness_history[3])
+    # ax.legend(["Fitness Média", "Melhor Fitness", "Fitness Brute Force", " Tamanho Média", "Tamanho do melhor"])
 
-    ax.legend(["Fitness Media", "Melhor Fitness", "Fitness Brute Force", " Peso Medio (x10)", "Peso do Melhor (x10)"])
-
-    ax.grid(True)
-    plt.show()
+    # ax.grid(True)
+    # plt.savefig(filename)
 
 
 app = Flask(__name__)
@@ -124,18 +127,16 @@ def hello_world():
     return "Hello World"
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-    # N = int(input("Número de navios: ")) # Número de navios
-    # L = int(input("Comprimento do cais: ")) # Comprimento máximo do cais
+    # app.run(host='0.0.0.0', port=5000)
+    N = int(input("Número de navios: ")) # Número de navios
+    L = int(input("Comprimento do cais: ")) # Comprimento máximo do cais
         
-    # p_count = 1000 # Tamanho da população
-    # epochs  = 1000 # Número de gerações para testar
+    p_count = 100 # Tamanho da população
+    epochs  = 1000 # Número de gerações para testar
 
-    # # Rodar algoritmos
-    # result_ga        = solve_ga(N, L, p_count, epochs)
-    # result_brutefoce = solve_bruteforce(result_ga[0], L)
+    # Rodar algoritmos
+    result_ga        = solve_ga(N, L, p_count, epochs)
+    result_brutefoce = solve_bruteforce(result_ga[0], L)
 
-    # # Plotar resultados
-    # print()
-    # print("Navios: ", result_ga[0])
-    # evaluate(result_ga)#, result_brutefoce)
+    # Plotar resultados
+    evaluate(result_ga, result_brutefoce)
