@@ -107,8 +107,8 @@ def solve_ga_endpoint():
     data = request.json
     N = data['N']
     L = data['L']
-    p_count = data.get('p_count', 1000)
-    epochs = data.get('epochs', 1000)
+    p_count = 100
+    epochs = 1000
     
     result_ga = solve_ga(N, L, p_count, epochs)
     navios, best_individual, fitness_history, t_ga = result_ga
@@ -127,16 +127,16 @@ def hello_world():
     return "Hello World"
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', port=5000)
-    N = int(input("Número de navios: ")) # Número de navios
-    L = int(input("Comprimento do cais: ")) # Comprimento máximo do cais
+    app.run(host='0.0.0.0', port=5000)
+    # N = int(input("Número de navios: ")) # Número de navios
+    # L = int(input("Comprimento do cais: ")) # Comprimento máximo do cais
         
-    p_count = 100 # Tamanho da população
-    epochs  = 1000 # Número de gerações para testar
+    # p_count = 100 # Tamanho da população
+    # epochs  = 1000 # Número de gerações para testar
 
-    # Rodar algoritmos
-    result_ga        = solve_ga(N, L, p_count, epochs)
-    result_brutefoce = solve_bruteforce(result_ga[0], L)
+    # # Rodar algoritmos
+    # result_ga        = solve_ga(N, L, p_count, epochs)
+    # result_brutefoce = solve_bruteforce(result_ga[0], L)
 
-    # Plotar resultados
-    evaluate(result_ga, result_brutefoce)
+    # # Plotar resultados
+    # evaluate(result_ga, result_brutefoce)
